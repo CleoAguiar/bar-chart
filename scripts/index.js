@@ -1,1 +1,1 @@
-alert('Data Visualization Project');
+// alert('Data Visualization Project');
