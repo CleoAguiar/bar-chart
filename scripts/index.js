@@ -1,4 +1,4 @@
-var data = [4, 8, 15, 16, 23, 42];
+var data = [1, 2, 4, 7, 12, 20, 33, 54, 88, 143, 232, 376, 609, 986, 1596];
 var width = 400, height = 400;
 
 $(document).ready(function(){
@@ -7,6 +7,11 @@ $(document).ready(function(){
 				.append('svg')
 				.attr('width', width)
 				.attr('height', height);
+
+	svg.append('text')
+	   .attr('x', (width/2))
+	   .attr('text-anchor', 'middle')
+	   .text('Sum of Fibonacci Numbers');
 
 	// Scale
 	var xscale = d3.scaleLinear()
