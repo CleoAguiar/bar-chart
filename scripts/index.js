@@ -24,12 +24,17 @@ $(document).ready(function(){
 	var y_axis = d3.axisLeft()
 				   .scale(yscale);
 
-	svg.append('g')
+	var g = svg.append('g')
+			   .attr('transform', 'translate(' + 10 + ',' + 0 + ')');
+
+	g.append('g')
 	   .attr('transform', 'translate(50, 10)')
+	   .attr('id', 'y-axis')
 	   .call(y_axis);
 	
 	var xAxisTranslate = height/2 + 10;
-	svg.append('g')
+	g.append('g')
 	   .attr('transform', 'translate(50, ' + xAxisTranslate  +')')
+	   .attr('id', 'x-axis')
 	   .call(x_axis);
 });
