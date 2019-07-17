@@ -16,17 +16,47 @@ $(document).ready(function(){
 	// var g = svg.append('g')
 	// 		   .attr('transform', 'translate(0,' + height + ')');
 
-	d3.csv('https://raw.githubusercontent.com/CleoAguiar/bar-chart/master/public/dataset.csv').then(function(data){
+	d3.json('https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json').then(function(data){
 	
-		// Sort Data
-		data = data.slice(0, 10);
-		data.sort((b, a) => a.Habitantes - b.Habitantes);
+		// Data map
+		var years = data.data.map( (item) => {
+			var quarter; // Trimestre
+			var month = item[0].substring(5,7);
+			switch(month){
+				case '01':
+					quarter = 'Q1';
+					break;
+				case '04':
+					quarter = 'Q2';
+					break;
+				case '07':
+					quarter = 'Q3';
+					break;
+				case '10':
+					quarter = 'Q4';
+					break;
+			}
+			return item[0].substring(0,4) + ' ' + quarter;			
+		})
+
+		var yearsDate = data.data.map(function(item) {
+			return new Date(item[0]);
+		});
+
+		var xMax = new Date(d3.max(yearsDate));
+		xMax.setMonth(xMax.getMonth() + 3);
+
+		var GDP = data.data.map(item => item[1]);
+		var scaleGGP = [];
+		
+		var gdpMin = d3.min(GDP), 
+			gdpMax = d3.max(GDP);
+
 
 		// Scale to axi X
-		var xscale = d3.scaleBand()
+		var xscale = d3.scaleTime()
 					   .range([0, width])
-					   .domain(data.map((d) => d.Pais))
-					   .padding(.4);
+					   .domain([d3.min(yearsDate), xMax]);
 		
 		svg.append('g')
 		   .attr('transform', 'translate(0,' + height + ')')
@@ -35,27 +65,37 @@ $(document).ready(function(){
 		   .selectAll('text')
 		   .attr("transform", "translate(-10,0)rotate(-45)")
 		   .style('text-anchor', 'end');
-	
+		
+		// Linear Scale
+		var linearscale = d3.scaleLinear()
+					   .domain([0, gdpMax])
+					   .range([0, height]);
+
+		scaleGGP = GDP.map(item => linearscale(item));
+
 		// Scale to axi Y
 		var yscale = d3.scaleLinear()
-					   .domain([0, d3.max(data).Habitantes])
+					   .domain([0, gdpMax])
 					   .range([height, 0]);
 
 		svg.append('g')
 		   .attr('id', 'y-axis')
 		   .call(d3.axisLeft(yscale)
-					.tickFormat(d => d/1000000 + ' mi')
-					.ticks(5));
+					// .tickFormat(d => d/100 + ' k')
+					.ticks(10)
+					);
 
 		// Bar
-		 svg.selectAll('.bar')
-		   .data(data)
+		 svg.selectAll('rect')
+		   .data(scaleGGP)
 		   .enter().append('rect')
+		   .attr('data-date', (d, i) => data.data[i][0])
+		   .attr('data-gdp', (d, i) => data.data[i][1])
 		   .attr('class', 'bar')
-		   .attr('x', d => xscale(d.Pais))
-		   .attr('y', d=> yscale(d.Habitantes))
-		   .attr('width', xscale.bandwidth())
-		   .attr('height', d => height - yscale(d.Habitantes));
+		   .attr('x', (d, i) => xscale(yearsDate[i]))
+		   .attr('y', (d, i) => height - d)
+		   .attr('width', width)
+		   .attr('height', d => d);
 	});
 
 });
