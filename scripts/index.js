@@ -1,8 +1,8 @@
 $(document).ready(function(){
 	
 	// set the dimensions and margins of the graph
-	var margin = {top: 50, bottom: 400, left: 50, right: 50},
-		width = 660 - margin.left - margin.right,
+	var margin = {top: 50, bottom: 60, left: 60, right: 0},
+		width = 1000 - margin.left - margin.right,
 		height = 600 - margin.top - margin.bottom;
 
 	// append the svg object to the body of the page
