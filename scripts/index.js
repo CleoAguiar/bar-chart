@@ -3,7 +3,8 @@ $(document).ready(function(){
 	// set the dimensions and margins of the graph
 	var margin = {top: 50, bottom: 60, left: 60, right: 0},
 		width = 1000 - margin.left - margin.right,
-		height = 600 - margin.top - margin.bottom;
+		height = 600 - margin.top - margin.bottom,
+		barWidth = width / 344;
 
 	// append the svg object to the body of the page
 	var svg = d3.select(".barChart")
@@ -85,6 +86,43 @@ $(document).ready(function(){
 					.ticks(10)
 					);
 
+		var tooltip = d3.select('.barChart')
+						.append('div')
+						.attr('id', 'tooltip')
+						.style('fill', '#555');
+
+		var mouseover = function(d, i){
+			d3.select(this)
+			  .transition()
+			  .duration(0)
+			  .style('height', d + 'px')
+			  .style('width', barWidth + 'px')
+			  .style('left', (i * barWidth) + 0 + 'px')
+			  .style('opacity', .9)
+			  .style('transform', 'translateX(60px)');
+
+			tooltip.transition()
+				   .duration(200)
+				   .style('opacity', .9);
+
+			var tooltipText = years[i] + '<br>' + '$' + GDP[i].toFixed(1).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + ' Billion';
+
+			tooltip.html(tooltipText)
+				   .attr('data-date', data.data[i][0])
+				   .style('left', (i * barWidth) + 30 + 'px')
+				   .style('top', height - 100 + 'px')
+				   .style('transform', 'translateX(60px)');
+		};
+
+		var mouseout = function(d){
+			// svg.transition()
+			// 	   .duration(200)
+			// 	   .style('opacity', 0);
+			// svg.transition()
+			// 	   .duration(200)
+			// 	   .style('opacity', 0);
+		};
+
 		// Bar
 		 svg.selectAll('rect')
 		   .data(scaleGGP)
@@ -94,8 +132,10 @@ $(document).ready(function(){
 		   .attr('class', 'bar')
 		   .attr('x', (d, i) => xscale(yearsDate[i]))
 		   .attr('y', (d, i) => height - d)
-		   .attr('width', width)
-		   .attr('height', d => d);
+		   .attr('width', barWidth)
+		   .attr('height', d => d)
+		   .on('mouseover', mouseover)
+		   .on('mouseout', mouseout);
 	});
 
 });
