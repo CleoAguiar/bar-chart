@@ -28,3 +28,5 @@ User Story #12: I can mouse over an area and see a tooltip with a corresponding 
 area.
 
 User Story #13: My tooltip should have a data-date property that corresponds to the data-date of the active area.
+
+Here is the dataset you will need to complete this project: https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/GDP-data.json
