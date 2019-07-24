@@ -4,6 +4,41 @@
 	border: 0;
 }
 
+.main {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgb(190, 200, 216);
+	background-size: 64px 128px;
+}
+
+.main .container #title {
+	margin-top: 40px;
+	margin-bottom: 100px;
+}
+
 .bar {
 	fill: steelblue;
+}
+
+#tooltip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: absolute;
+	text-align: center;
+	width: 150px;
+	height: 50px;
+	padding: 2px;
+	font: 12px;
+	background: rgb(203, 227, 235);
+	box-shadow: 1px 1px 10px;
+	border-radius: 2px;
+	pointer-events: none;
+}
+
+.overlay {
+	position: absolute;
+	background: #FFF;
+	pointer-events: none;
 }
