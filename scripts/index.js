@@ -1,141 +1,153 @@
 $(document).ready(function(){
-	
-	// set the dimensions and margins of the graph
-	var margin = {top: 50, bottom: 60, left: 60, right: 0},
-		width = 1000 - margin.left - margin.right,
-		height = 600 - margin.top - margin.bottom,
-		barWidth = width / 344;
+    
+    // set the dimensions and margins of the graph
+    var margin = {top: 10, bottom: 50, left: 50, right: 50},
+        width = 800,
+        height = 400,
+        barWidth = width / 275;
 
-	// append the svg object to the body of the page
-	var svg = d3.select(".barChart")
-				.append("svg")
-				.attr("width", width + margin.left + margin.right)
-				.attr("height", height + margin.top + margin.bottom)
-				.append("g")
-				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-	
-	// var g = svg.append('g')
-	// 		   .attr('transform', 'translate(0,' + height + ')');
+    var tooltip = d3.select('.barChart')
+                    .append('div')
+                    .attr('id', 'tooltip')
+                    .style('opacity', 0);
 
-	d3.json('https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json').then(function(data){
-	
-		// Data map
-		var years = data.data.map( (item) => {
-			var quarter; // Trimestre
-			var month = item[0].substring(5,7);
-			switch(month){
-				case '01':
-					quarter = 'Q1';
-					break;
-				case '04':
-					quarter = 'Q2';
-					break;
-				case '07':
-					quarter = 'Q3';
-					break;
-				case '10':
-					quarter = 'Q4';
-					break;
-			}
-			return item[0].substring(0,4) + ' ' + quarter;			
-		})
+    var overlay = d3.select('.barChart')
+                    .append('div')
+                    .attr('class', 'overlay')
+                    .style('opacity', 0);
 
-		var yearsDate = data.data.map(function(item) {
-			return new Date(item[0]);
-		});
+    // append the svg object to the body of the page
+    var svg = d3.select(".barChart")
+                .append("svg")
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom);
+    
+    d3.json('https://raw.githubusercontent.com/FreeCodeCamp/ProjectReferenceData/master/GDP-data.json').then(function(data){
 
-		var xMax = new Date(d3.max(yearsDate));
-		xMax.setMonth(xMax.getMonth() + 3);
+        svg.append('text')
+           .attr('transform', 'rotate(-90)')
+           .attr('x', -200)
+           .attr('y', 80)
+           .text('Gross Domestic Product');
 
-		var GDP = data.data.map(item => item[1]);
-		var scaleGGP = [];
-		
-		var gdpMin = d3.min(GDP), 
-			gdpMax = d3.max(GDP);
+        svg.append('text')
+           .attr('x', width/2 + 120)
+           .attr('y', height + 50)
+           .text('More Information: http://www.bea.gov/national/pdf/nipaguid.pdf')
+           .attr('class', 'info');
 
+        // Data map
+        var years = data.data.map( (item) => {
+            var quarter; // Trimestre
+            var month = item[0].substring(5,7);
+            switch(month){
+                case '01':
+                    quarter = 'Q1';
+                    break;
+                case '04':
+                    quarter = 'Q2';
+                    break;
+                case '07':
+                    quarter = 'Q3';
+                    break;
+                case '10':
+                    quarter = 'Q4';
+                    break;
+            }
+            return item[0].substring(0,4) + ' ' + quarter;			
+        })
 
-		// Scale to axi X
-		var xscale = d3.scaleTime()
-					   .range([0, width])
-					   .domain([d3.min(yearsDate), xMax]);
-		
-		svg.append('g')
-		   .attr('transform', 'translate(0,' + height + ')')
-		   .attr('id', 'x-axis')
-		   .call(d3.axisBottom(xscale))
-		   .selectAll('text')
-		   .attr("transform", "translate(-10,0)rotate(-45)")
-		   .style('text-anchor', 'end');
-		
-		// Linear Scale
-		var linearscale = d3.scaleLinear()
-					   .domain([0, gdpMax])
-					   .range([0, height]);
+        var yearsDate = data.data.map(function(item) {
+            return new Date(item[0]);
+        });
 
-		scaleGGP = GDP.map(item => linearscale(item));
+        // Scale to axi X
+        var xMax = new Date(d3.max(yearsDate));
+        xMax.setMonth(xMax.getMonth() + 3);
 
-		// Scale to axi Y
-		var yscale = d3.scaleLinear()
-					   .domain([0, gdpMax])
-					   .range([height, 0]);
+        var xScale = d3.scaleTime()
+                       .range([0, width])
+                       .domain([d3.min(yearsDate), xMax]);
 
-		svg.append('g')
-		   .attr('id', 'y-axis')
-		   .call(d3.axisLeft(yscale)
-					// .tickFormat(d => d/100 + ' k')
-					.ticks(10)
-					);
+        var xAxis = d3.axisBottom().scale(xScale);
 
-		var tooltip = d3.select('.barChart')
-						.append('div')
-						.attr('id', 'tooltip')
-						.style('fill', '#555');
+        var xAxisGroup = svg.append('g')
+                            .call(xAxis)
+                            .attr('id', 'x-axis')
+                            .attr('transform', 'translate(60, 400)');
 
-		var mouseover = function(d, i){
-			d3.select(this)
-			  .transition()
-			  .duration(0)
-			  .style('height', d + 'px')
-			  .style('width', barWidth + 'px')
-			  .style('left', (i * barWidth) + 0 + 'px')
-			  .style('opacity', .9)
-			  .style('transform', 'translateX(60px)');
+        // GDP Data
+        var GDP = data.data.map(item => item[1]);
+        var scaleGGP = [];
+        
+        var gdpMin = d3.min(GDP), 
+            gdpMax = d3.max(GDP);
 
-			tooltip.transition()
-				   .duration(200)
-				   .style('opacity', .9);
+        // Linear Scale
+        var linearscale = d3.scaleLinear()
+                       .domain([0, gdpMax])
+                       .range([0, height]);
 
-			var tooltipText = years[i] + '<br>' + '$' + GDP[i].toFixed(1).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + ' Billion';
+        scaleGGP = GDP.map(item => linearscale(item));
 
-			tooltip.html(tooltipText)
-				   .attr('data-date', data.data[i][0])
-				   .style('left', (i * barWidth) + 30 + 'px')
-				   .style('top', height - 100 + 'px')
-				   .style('transform', 'translateX(60px)');
-		};
+        // Scale to axi Y
+        var yAxisScale = d3.scaleLinear()
+                       .domain([0, gdpMax])
+                       .range([height, 0]);
 
-		var mouseout = function(d){
-			// svg.transition()
-			// 	   .duration(200)
-			// 	   .style('opacity', 0);
-			// svg.transition()
-			// 	   .duration(200)
-			// 	   .style('opacity', 0);
-		};
+        var yAxis = d3.axisLeft(yAxisScale);
 
-		// Bar
-		 svg.selectAll('rect')
-		   .data(scaleGGP)
-		   .enter().append('rect')
-		   .attr('data-date', (d, i) => data.data[i][0])
-		   .attr('data-gdp', (d, i) => data.data[i][1])
-		   .attr('class', 'bar')
-		   .attr('x', (d, i) => xscale(yearsDate[i]))
-		   .attr('y', (d, i) => height - d)
-		   .attr('width', barWidth)
-		   .attr('height', d => d)
-		   .on('mouseover', mouseover)
-		   .on('mouseout', mouseout);
-	});
+        var yAxisGroup = svg.append('g')
+                            .call(yAxis)
+                            .attr('id', 'y-axis')
+                            .attr('transform', 'translate(60, 0)');
+
+        var mouseover = function(d, i){
+            overlay.transition()
+                   .duration(0)
+                   .style('height', d + 'px')
+                   .style('width', barWidth + 'px')
+                   .style('opacity', .9)
+                   .style('left', (i * barWidth) + 230 + 'px')
+                   .style('top', height - d + 158 + 'px')
+                   .style('transform', 'translateX(60px)');
+
+            tooltip.transition()
+                   .duration(200)
+                   .style('opacity', .9);
+
+            var tooltipText = years[i] + '<br>' + '$' + GDP[i].toFixed(1).replace(/(\d)(?=(\d{3})+\.)/g, '$1,') + ' Billion';
+
+            tooltip.html(tooltipText)
+                   .attr('data-date', data.data[i][0])
+                   .style('left', (i * barWidth) + 30 + 'px')
+                   .style('top', height - 100 + 'px')
+                   .style('transform', 'translateX(60px)');
+        };
+
+        var mouseout = function(d){
+            tooltip.transition()
+                   .duration(200)
+                   .style('opacity', 0);
+            overlay.transition()
+                   .duration(200)
+                   .style('opacity', 0);
+        };
+
+        // Bar
+        d3.select('svg').selectAll('rect')
+           .data(scaleGGP)
+           .enter().append('rect')
+           .attr('data-date', (d, i) => data.data[i][0])
+           .attr('data-gdp', (d, i) => data.data[i][1])
+           .attr('class', 'bar')
+           .attr('x', (d, i) => xScale(yearsDate[i]))
+           .attr('y', (d, i) => height - d)
+           .attr('width', barWidth)
+           .attr('height', d => d)
+           .attr('transform', 'translate(60, 0)')
+           .on('mouseover', mouseover)
+           .on('mouseout', mouseout);
+    });
 
 });
